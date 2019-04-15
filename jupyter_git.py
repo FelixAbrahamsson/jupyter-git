@@ -3,8 +3,8 @@ import glob
 import os
 import argparse
 
-NB_GIT_DIR = '.nbgit/'
-EXT = '.nbgit'
+NB_GIT_DIR = '.gitnb/'
+EXT = '.gitnb'
 
 
 def read_nb_files():
@@ -49,7 +49,7 @@ def strip_nb(data):
     return new_json
 
 
-def write_nbgit():
+def write_gitnb():
 
     fnames = read_nb_files()
     if len(fnames) > 0:
@@ -69,7 +69,7 @@ def write_nbgit():
             json.dump(stripped_json, f)
 
 
-def read_nbgit():
+def read_gitnb():
 
     for fname in os.listdir(NB_GIT_DIR):
 
@@ -103,6 +103,6 @@ if __name__ == '__main__':
         print("Must either read or write.")
     else:
         if args.write:
-            write_nbgit()
+            write_gitnb()
         if args.read:
-            read_nbgit()
+            read_gitnb()
