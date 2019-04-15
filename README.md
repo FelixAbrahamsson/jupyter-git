@@ -1,5 +1,6 @@
 # jupyter-git
 Lightweight tool for easier jupyter notebook version control.
+
 OBS: WIP
 
 ## Description
@@ -8,5 +9,8 @@ To ignore a specific notebook with gitignore, specify notebookname.nbgit in your
 
 
 ## Usage
-    - option `--write` will write notebook data to .nbgit. Run the script with this option, then commit the .nbgit folder and proceed as normal.
-    - option `--read` will read notebook data from .nbgit into .ipynb files. OBS: This will overwrite existing notebooks with the same name.
+- option `--write` will write notebook data to .nbgit. Run the script with this option, then commit the .nbgit folder and proceed as normal.
+- option `--read` will read notebook data from .nbgit into .ipynb files. OBS: This will overwrite existing notebooks with the same name.
+
+### TODO:
+- Turn it into a git extension
