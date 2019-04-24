@@ -2,9 +2,15 @@ import json
 import glob
 import os
 import argparse
+import re
 
 NB_GIT_DIR = '.gitnb/'
-EXT = '.gitnb'
+EXT = '.py'
+BLOCK_SEPARATORS = {
+    'code' : '\n###_CODEBLOCK_###\n',
+    'markdown' : '\n###_MARKDONWBLOCK_###\n',
+}
+SEPS_TO_BLOCK = {sep : name for name, sep in BLOCK_SEPARATORS.items()}
 
 
 def read_nb_files():
@@ -24,29 +30,27 @@ def read_nb_files():
 
     return nb_files
 
-
-def strip_nb(data):
-
-    new_json = {
-        'cells' : [],
+def get_output_text(data):
+    
+    metadata = {
         'nbformat_minor' : data['nbformat_minor'],
         'nbformat' : data['nbformat'],
     }
-    new_json['metadata'] = {
+    metadata['metadata'] = {
         'kernelspec' : data['metadata']['kernelspec'],
         'language_info' : data['metadata']['language_info'],
     }
-
+    
+    output = str(metadata) + '\n'
+    
     for cell in data['cells']:
         
-        new_cell = {
-            'cell_type' : cell['cell_type'],
-            'source' : cell['source'],
-        }
+        output += BLOCK_SEPARATORS[cell['cell_type']]
         
-        new_json['cells'].append(new_cell)
-
-    return new_json
+        for line in cell['source']:
+            output += line
+        
+    return output
 
 
 def write_gitnb():
@@ -61,12 +65,12 @@ def write_gitnb():
         with open(fname, 'r') as f:
             nb_json = json.load(f)
 
-        stripped_json = strip_nb(nb_json)
+        nb_text = get_output_text(nb_json)
 
         new_fname = NB_GIT_DIR + fname.replace('.ipynb', EXT)
 
         with open(new_fname, 'w') as f:
-            json.dump(stripped_json, f)
+            f.write(nb_text)
 
 
 def read_gitnb():
@@ -74,19 +78,43 @@ def read_gitnb():
     for fname in os.listdir(NB_GIT_DIR):
 
         with open(NB_GIT_DIR + fname, 'r') as f:
-            data = json.load(f)
-
-        for cell in data['cells']:
-
-            cell['metadata'] = {}
+            lines = f.readlines()
+            
+        metadata = json.loads(lines[0].replace("'", "\""))
+        out_json = metadata
+        out_json['cells'] = []
         
-            if cell['cell_type'] == 'code':
-                cell['execution_count'] = None
-                cell['outputs'] = []
-
-        nb_fname = fname.replace(EXT, '.ipynb')
+        if len(lines) > 1:
+            
+            separator_re = r'(' + r'|'.join([ sep for sep in BLOCK_SEPARATORS.values()]) + r')'
+            text = ''.join(lines)
+            split = re.split(separator_re, text)
+            if split[0] not in SEPS_TO_BLOCK:
+                split = split[1:]
+            
+            end = (len(split) // 2) * 2
+            blocks = [(SEPS_TO_BLOCK[split[i]], split[i+1]) for i in range(0, end, 2)]
+            
+            for cell_type, source in blocks:
+                
+                cell = {
+                    'metadata' : {},
+                    'cell_type' : cell_type,
+                    'source' : source,
+                }
+                
+                if cell_type == 'code':
+                    
+                    cell['execution_count'] = None
+                    cell['outputs'] = []
+                
+                out_json['cells'].append(cell)
+            
+        nb_fname = (fname).replace(EXT, '.ipynb')
         with open(nb_fname, 'w') as f:
-            json.dump(data, f)
+            json.dump(out_json, f)
+            
+    return out_json
 
 
 if __name__ == '__main__':
