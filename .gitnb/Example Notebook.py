@@ -1,6 +1,9 @@
 {'nbformat_minor': 1, 'nbformat': 4, 'metadata': {'kernelspec': {'display_name': 'Python 3', 'language': 'python', 'name': 'python3'}, 'language_info': {'codemirror_mode': {'name': 'ipython', 'version': 3}, 'file_extension': '.py', 'mimetype': 'text/x-python', 'name': 'python', 'nbconvert_exporter': 'python', 'pygments_lexer': 'ipython3', 'version': '3.6.4'}}}
 
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 #### Notes/ideas/todos
 
     - Data augmentation: https://github.com/drscotthawley/audio-classifier-keras-cnn/blob/master/augment_data.py
@@ -13,9 +16,16 @@
     - Clean up noisy data by training model on curated data and figuring out which noisy data is bad
     - Split each sample into several segments
     - Do variable length batching with CNN -> LSTM -> Dense model
-###_MARKDONWBLOCK_###
+'''
+
+		###_MARKDOWNBLOCK_###
+
+'''
 #### Constants
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 DO_PREPROCESS = True
 DO_TRAIN = True
 
@@ -33,9 +43,15 @@ for d in [data_dir, checkpoint_dir, ensemble_checkpoint_dir]:
         print()
     except:
         print("No such directory '{}'".format(d))
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Imports
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 import numpy as np
 import pandas as pd
 import torch
@@ -57,11 +73,21 @@ warnings.filterwarnings('ignore')
 
 import time
 kernel_start_time = time.time()
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Helpers
-###_MARKDONWBLOCK_###
+'''
+
+		###_MARKDOWNBLOCK_###
+
+'''
 #### Utils
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 def calculate_overall_lwlrap_sklearn(truth, scores):
     """Calculate the overall lwlrap using sklearn.metrics.lrap."""
     # sklearn doesn't correctly apply weighting to samples with no labels, so just skip them.
@@ -72,11 +98,21 @@ def calculate_overall_lwlrap_sklearn(truth, scores):
         scores[nonzero_weight_sample_indices, :], 
         sample_weight=sample_weight[nonzero_weight_sample_indices])
     return overall_lwlrap
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 #### Data
-###_MARKDONWBLOCK_###
+'''
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ##### Preprocess
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 def read_audio(file, config):
     
     data, _ = librosa.load(
@@ -154,9 +190,15 @@ def create_mel_specs(fnames, data_dir, config, to_disk=True, out_dir=None):
 
     if not to_disk:
         return all_features
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ##### Augment
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 ## CREDIT: https://github.com/drscotthawley/audio-classifier-keras-cnn/blob/master/augment_data.py
 
 from random import getrandbits
@@ -246,9 +288,15 @@ def augment_data(y, sr, n_augment=0, allow_speedandpitch=True, allow_pitch=True,
             mods.append(y_mod)
 
     return mods
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ##### Containers
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 class MelSpecDatasetPreprocessed(Dataset):
     
     def __init__(self, features_info, config, train=True, from_disk=True, data_dir=None, labels=None):
@@ -388,9 +436,15 @@ class SubsetRandomOversampler(torch.utils.data.sampler.Sampler):
 
     def __len__(self):
         return len(self.sample_indices)
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 #### Models
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 class CNN(nn.Module):
     
     def __init__(self, config):
@@ -469,9 +523,15 @@ class CNN(nn.Module):
             return logits
         else:
             return logits, self.criterion(logits, labels)
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 #### Model wrapper
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 class ModelWrapper:
     
     def __init__(self, config=None, pretrained_path=None):
@@ -774,9 +834,15 @@ class ModelWrapper:
         self.net.load_state_dict(state_dict)
         optimizer_state_dict = torch.load(path + '_optim.pth')
         self.optimizer.load_state_dict(optimizer_state_dict)
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 #### Ensemble wrapper
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 class EnsembleWrapper():
     
     def __init__(self, config, pretrained_path=None):
@@ -968,9 +1034,15 @@ class EnsembleWrapper():
             checkpoint_path = checkpoint_dir + 'model_' + str(i)
             model = ModelWrapper(pretrained_path=checkpoint_path)
             self.models.append(model)
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Load data
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 data_curated = pd.read_csv(data_dir + 'train_curated.csv')
 data_noisy = pd.read_csv(data_dir + 'train_noisy.csv')
 
@@ -987,9 +1059,15 @@ label_to_idx = {l : i for i, l in enumerate(all_labels)}
 print("{} curated data.".format(len(data_curated)))
 print("{} noisy data.".format(len(data_noisy)))
 print("{} labels.".format(len(all_labels)))
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Hyperparameters
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 config = dict(
     ## Melspectrogram hyperparameters
     n_fft = 2048,
@@ -1027,13 +1105,21 @@ config['seq_len'] = (config['sampling_rate'] * config['max_seconds']) // config[
 print("seq length:", config['seq_len'])
 device = torch.device('cuda' if config['use_cuda'] else 'cpu')
 device
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 #### Find mean values for scaling
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 def get_mean_std(vals):
     
     return vals.mean(axis=1), vals.std(axis=1)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 means_stds = data_curated['fname'][0:20].apply(
     lambda f: get_mean_std(
         extract_mel_spec(
@@ -1042,7 +1128,9 @@ means_stds = data_curated['fname'][0:20].apply(
         )
     )
 )
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 means = np.zeros(64)
 stds = np.zeros(64)
 for m, s in means_stds:
@@ -1052,13 +1140,25 @@ for m, s in means_stds:
     
 means /= len(means_stds)
 stds /= len(means_stds)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 stds.max(), means.min()
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 To approximately scale values to be normal distributed, we can subtract -80 and divide by 12. A better approach might be to scale the channels individually, but they are quite close in magnitude so it may not be necessary.
-###_MARKDONWBLOCK_###
+'''
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Preprocess data
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 def labels_to_np(labels):
     
     labels_np = np.zeros((len(labels), len(all_labels)), dtype=np.long)
@@ -1068,13 +1168,17 @@ def labels_to_np(labels):
             labels_np[i, j] = 1
             
     return labels_np
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 fnames_curated = data_curated['fname'].values
 labels_curated = labels_to_np(data_curated['labels'].values)
 
 fnames_noisy = data_noisy['fname'].values
 labels_noisy = labels_to_np(data_noisy['labels'].values)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_PREPROCESS:
     
     import shutil
@@ -1086,7 +1190,9 @@ if DO_PREPROCESS:
     create_mel_specs(
         fnames_curated, in_folder, config, 
         to_disk=True, out_dir=out_folder)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_PREPROCESS:
     
     in_folder = data_dir + 'train_noisy/'
@@ -1096,9 +1202,15 @@ if DO_PREPROCESS:
     create_mel_specs(
         fnames_noisy, in_folder, config, 
         to_disk=True, out_dir=out_folder)
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Create train/valid dataloaders
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     
     train_fnames, valid_fnames, train_labels, valid_labels = train_test_split(
@@ -1139,9 +1251,15 @@ if DO_TRAIN:
         labels=valid_labels)
 
     valid_loader = DataLoader(valid_data, batch_size=128, shuffle=False)
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Train model
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 model_hyperparameters = dict(
     pad_convs = True,
     n_filters = [64, 128, 128, 256, 512],
@@ -1153,13 +1271,19 @@ model_hyperparameters = dict(
     dropout = 0.4,
 )
 config.update(model_hyperparameters)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 model = ModelWrapper(config=config)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 summary, n_params = model.get_summary()
 print("{:,} total parameters".format(n_params))
 summary
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     
     config_changes = dict(
@@ -1174,7 +1298,9 @@ if DO_TRAIN:
 
     model.train(train_loader, valid_loader, verbose=2)
     print("Preperatory training finished!")
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     ## Initial training with noisy dataset
     
@@ -1190,7 +1316,9 @@ if DO_TRAIN:
 
     model.train(train_loader, valid_loader, verbose=2)
     print("Preperatory training finished!")
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     ## Training with only curated data
     config_changes = dict(
@@ -1206,7 +1334,9 @@ if DO_TRAIN:
     
     model.train(train_loader, valid_loader, verbose=2)
     print("Preperatory training finished!")
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     ## Full training with lower learning rate and some gradient clipping
     config_changes = dict(
@@ -1216,7 +1346,9 @@ if DO_TRAIN:
     model.update_config(config_changes)
 
     model.train(train_loader, valid_loader)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     ## Mega deep training
     config_changes = dict(
@@ -1226,12 +1358,20 @@ if DO_TRAIN:
     model.update_config(config_changes)
 
     model.train(train_loader, valid_loader)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     model.save_state(checkpoint_dir, 'model_0')
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Train ensemble
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 model_hyperparameters = dict(
     pad_convs = True,
     n_filters = [64, 128, 128, 256, 512],
@@ -1243,10 +1383,14 @@ model_hyperparameters = dict(
     dropout = 0.4,
 )
 config.update(model_hyperparameters)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     ensemble = EnsembleWrapper(config=config)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
 
     stage_configs = [
@@ -1271,29 +1415,49 @@ if DO_TRAIN:
         )
     ]
     ensemble.train(fnames_curated, labels_curated, fnames_noisy, labels_noisy, stage_configs)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 if DO_TRAIN:
     ensemble.save_models(ensemble_checkpoint_dir)
-###_MARKDONWBLOCK_###
+
+		###_MARKDOWNBLOCK_###
+
+'''
 ### Predict test set
-###_CODEBLOCK_###
+'''
+
+		###_CODEBLOCK_###
+
 #model = ModelWrapper(pretrained_path=checkpoint_dir + 'model_0')
 model = EnsembleWrapper(config, pretrained_path=ensemble_checkpoint_dir)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 test_dir = data_dir + 'test/'
 test_fnames = os.listdir(test_dir)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 test_features = create_mel_specs(test_fnames, test_dir, config, to_disk=False)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 test_data = MelSpecDatasetPreprocessed(test_features, config, train=False, from_disk=False)
 test_loader = DataLoader(test_data, batch_size=128, shuffle=False)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 predictions = model.predict(test_loader)
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 predictions_df = pd.DataFrame(predictions, columns=all_labels)
 label_columns_sorted = sorted(predictions_df.columns)
 predictions_df['fname'] = test_fnames
 predictions_df = predictions_df[['fname'] + label_columns_sorted]
 predictions_df.head()
-###_CODEBLOCK_###
+
+		###_CODEBLOCK_###
+
 predictions_df.to_csv('submission.csv', index=None)

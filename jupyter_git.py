@@ -7,8 +7,8 @@ import re
 NB_GIT_DIR = '.gitnb/'
 EXT = '.py'
 BLOCK_SEPARATORS = {
-    'code' : '\n###_CODEBLOCK_###\n',
-    'markdown' : '\n###_MARKDONWBLOCK_###\n',
+    'code' : '\n\n\t\t###_CODEBLOCK_###\n\n',
+    'markdown' : '\n\n\t\t###_MARKDOWNBLOCK_###\n\n',
 }
 SEPS_TO_BLOCK = {sep : name for name, sep in BLOCK_SEPARATORS.items()}
 
@@ -46,10 +46,15 @@ def get_output_text(data):
     for cell in data['cells']:
         
         output += BLOCK_SEPARATORS[cell['cell_type']]
+        if cell['cell_type'] == 'markdown':
+            output += "'''\n"
         
         for line in cell['source']:
             output += line
         
+        if cell['cell_type'] == 'markdown':
+            output += "\n'''"
+
     return output
 
 
@@ -100,9 +105,13 @@ def read_gitnb():
                 cell = {
                     'metadata' : {},
                     'cell_type' : cell_type,
-                    'source' : source,
                 }
-                
+
+                if cell_type == 'markdown':
+                    source = source[4:-4]
+
+                cell['source'] = source
+
                 if cell_type == 'code':
                     
                     cell['execution_count'] = None
